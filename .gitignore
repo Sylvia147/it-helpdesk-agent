@@ -18,6 +18,7 @@ logs/traces.jsonl
 logs/escalations/*.json
 evals/results/*.json
 USAGE.md
+PLAN.md
 
 # IDE
 .idea/
