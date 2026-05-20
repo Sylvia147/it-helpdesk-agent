@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual env
+.venv/
+venv/
+
+# Env
+.env
+.env.local
+
+# Runtime artifacts
+logs/traces.jsonl
+logs/escalations/*.json
+evals/results/*.json
+USAGE.md
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Keep the dirs themselves
+!logs/.gitkeep
+!logs/escalations/.gitkeep
+!evals/results/.gitkeep

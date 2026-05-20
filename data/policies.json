@@ -1,0 +1,114 @@
+{
+  "_meta": {
+    "description": "Policy table that defines which actions the agent may handle directly versus those requiring escalation. The escalation tool MUST consult this table before acting.",
+    "version": "1.0"
+  },
+  "password_reset_guidance": {
+    "action": "password_reset_guidance",
+    "description": "Walk the user through self-service password reset (forgot-password flow).",
+    "agent_allowed": true,
+    "risk_level": "low",
+    "requires": [],
+    "escalate_to": null,
+    "rationale": "Self-service flow exists at sso.acme.com/reset; no privileged action by agent."
+  },
+  "mfa_reset": {
+    "action": "mfa_reset",
+    "description": "Reset a user's multi-factor authentication device or backup codes.",
+    "agent_allowed": false,
+    "risk_level": "high",
+    "requires": ["identity_verification_in_person_or_video", "iam_team"],
+    "escalate_to": "Identity Access Management",
+    "rationale": "MFA bypass is a critical attack vector; requires verified identity check by IAM staff per security policy SEC-IAM-003."
+  },
+  "account_unlock": {
+    "action": "account_unlock",
+    "description": "Unlock a user account that was locked by Okta or another SSO provider.",
+    "agent_allowed": false,
+    "risk_level": "high",
+    "requires": ["iam_team"],
+    "escalate_to": "Identity Access Management",
+    "rationale": "Account lockouts may indicate either a forgotten credential or an active credential-stuffing attack. IAM must review the lockout reason before unlocking."
+  },
+  "vpn_troubleshooting_guidance": {
+    "action": "vpn_troubleshooting_guidance",
+    "description": "Walk the user through standard VPN connectivity troubleshooting (client restart, MTU, DNS, route).",
+    "agent_allowed": true,
+    "risk_level": "low",
+    "requires": [],
+    "escalate_to": null,
+    "rationale": "Read-only diagnostics; no infrastructure change."
+  },
+  "saas_outage_communication": {
+    "action": "saas_outage_communication",
+    "description": "Inform the user of a known SaaS service degradation and provide the documented workaround.",
+    "agent_allowed": true,
+    "risk_level": "low",
+    "requires": [],
+    "escalate_to": null,
+    "rationale": "Communicating known status is information sharing, not action."
+  },
+  "snowflake_prod_access": {
+    "action": "snowflake_prod_access",
+    "description": "Grant a user read or write access to a production Snowflake database.",
+    "agent_allowed": false,
+    "risk_level": "high",
+    "requires": ["manager_approval", "data_owner_approval"],
+    "escalate_to": "Data Platform Team",
+    "rationale": "Production data access falls under data governance policy DG-001. Both line manager and dataset data-owner approvals are mandatory."
+  },
+  "snowflake_dev_access": {
+    "action": "snowflake_dev_access",
+    "description": "Grant a user access to a development Snowflake database.",
+    "agent_allowed": false,
+    "risk_level": "medium",
+    "requires": ["manager_approval"],
+    "escalate_to": "Data Platform Team",
+    "rationale": "Dev access is lower-risk but still requires manager sign-off for cost-allocation tracking."
+  },
+  "grafana_readonly_access": {
+    "action": "grafana_readonly_access",
+    "description": "Grant read-only access to internal Grafana dashboards.",
+    "agent_allowed": true,
+    "risk_level": "low",
+    "requires": ["team_membership_verified"],
+    "escalate_to": null,
+    "rationale": "Read-only observability access is provisioned automatically via Okta group `grafana-readers`. Agent may instruct the user how to request via the standard self-service form."
+  },
+  "production_incident_investigation": {
+    "action": "production_incident_investigation",
+    "description": "Investigate a multi-system production failure such as a data pipeline outage spanning multiple services.",
+    "agent_allowed": false,
+    "risk_level": "high",
+    "requires": ["devops_team"],
+    "escalate_to": "DevOps / Data Platform",
+    "rationale": "Multi-system incidents may require log inspection, infrastructure changes, and cross-team coordination beyond the agent's read-only mock data tools."
+  },
+  "new_hardware_request": {
+    "action": "new_hardware_request",
+    "description": "Request a new laptop, monitor, dock, or other hardware.",
+    "agent_allowed": false,
+    "risk_level": "medium",
+    "requires": ["manager_approval"],
+    "escalate_to": "IT Hardware",
+    "rationale": "Hardware requests have budget implications; require manager sign-off."
+  },
+  "software_license_request": {
+    "action": "software_license_request",
+    "description": "Request a paid software license (Adobe, Figma seat, JetBrains, etc.).",
+    "agent_allowed": false,
+    "risk_level": "medium",
+    "requires": ["manager_approval"],
+    "escalate_to": "IT Procurement",
+    "rationale": "License purchases require manager sign-off and procurement processing."
+  },
+  "general_troubleshooting": {
+    "action": "general_troubleshooting",
+    "description": "Generic IT troubleshooting guidance for issues with no privileged action required.",
+    "agent_allowed": true,
+    "risk_level": "low",
+    "requires": [],
+    "escalate_to": null,
+    "rationale": "Default action when no privileged operation is needed."
+  }
+}

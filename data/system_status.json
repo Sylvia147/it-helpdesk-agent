@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "description": "Mock system / SaaS service status. Keyed by service name (lowercase). Snapshot as of the run-time date.",
+    "as_of": "2026-05-16T14:30:00Z"
+  },
+  "_dependencies": {
+    "_description": "Service-to-service dependency graph. A service depends on the listed services for its functionality. Agent uses this to traverse upstream when a service appears healthy but its consumers report problems.",
+    "tableau": ["jenkins", "snowflake"],
+    "jenkins": ["snowflake"]
+  },
+  "okta": {
+    "service": "Okta",
+    "category": "identity",
+    "status": "operational",
+    "last_checked": "2026-05-16T14:30:00Z",
+    "incidents": [],
+    "recent_changes": []
+  },
+  "vpn": {
+    "service": "Corporate VPN (Cisco AnyConnect)",
+    "category": "network",
+    "status": "operational",
+    "last_checked": "2026-05-16T14:30:00Z",
+    "incidents": [],
+    "recent_changes": []
+  },
+  "salesforce": {
+    "service": "Salesforce",
+    "category": "saas",
+    "status": "degraded",
+    "last_checked": "2026-05-16T14:30:00Z",
+    "incidents": [
+      {
+        "incident_id": "SF-INC-2026-0515-003",
+        "started_at": "2026-05-15T14:30:00Z",
+        "severity": "P3",
+        "regions_affected": ["chicago", "midwest_us"],
+        "summary": "Elevated latency for Salesforce users in Chicago and Midwest regions. Page loads taking 30-60 seconds; record saves intermittently failing.",
+        "root_cause": "Salesforce regional CDN node degradation in Midwest. Under investigation by Salesforce ops.",
+        "workaround": "Connect via corporate VPN routed through East Coast egress; Salesforce Mobile app is unaffected.",
+        "eta": "Salesforce engineering investigating; no firm ETA. Status updates at status.salesforce.com.",
+        "internal_owner": "IT Service Desk"
+      }
+    ],
+    "recent_changes": []
+  },
+  "snowflake": {
+    "service": "Snowflake",
+    "category": "data_warehouse",
+    "status": "operational",
+    "last_checked": "2026-05-16T14:30:00Z",
+    "incidents": [],
+    "recent_changes": []
+  },
+  "grafana": {
+    "service": "Grafana (internal)",
+    "category": "observability",
+    "status": "operational",
+    "last_checked": "2026-05-16T14:30:00Z",
+    "incidents": [],
+    "recent_changes": []
+  },
+  "jenkins": {
+    "service": "Jenkins (internal CI)",
+    "category": "ci_cd",
+    "status": "operational",
+    "last_checked": "2026-05-16T14:30:00Z",
+    "incidents": [],
+    "recent_changes": [
+      {
+        "change_id": "CHG-2026-0515-001",
+        "performed_at": "2026-05-15T22:00:00Z",
+        "type": "scheduled_maintenance",
+        "window_label": "Friday 2026-05-15 maintenance window",
+        "summary": "Network firewall rule update across the corporate egress gateway. Goal: tighten allowlists for outbound traffic from internal CI agents.",
+        "potential_impact": "Jenkins agents may experience timeouts when reaching internal artifact mirrors (Maven, PyPI, npm) or downstream systems if their target IPs were not included in the new allowlist.",
+        "performed_by": "DevOps / Network Engineering",
+        "_demo_hook": "Demo 5 — pipeline failing 'since Friday maintenance'"
+      }
+    ]
+  },
+  "tableau": {
+    "service": "Tableau Server (internal)",
+    "category": "analytics",
+    "status": "operational",
+    "last_checked": "2026-05-16T14:30:00Z",
+    "incidents": [],
+    "recent_changes": []
+  },
+  "slack": {
+    "service": "Slack",
+    "category": "saas",
+    "status": "operational",
+    "last_checked": "2026-05-16T14:30:00Z",
+    "incidents": [],
+    "recent_changes": []
+  }
+}

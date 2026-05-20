@@ -1,0 +1,568 @@
+{
+  "_meta": {
+    "description": "Past IT support ticket archive. Most cases are resolved, with a small fraction in non-resolved terminal states (user_abandoned, could_not_reproduce) to reflect realistic ServiceNow archive distribution. The agent's search_history tool defaults to filtering only resolved cases. The first 3 entries are key hooks for demo scenarios.",
+    "count": 25
+  },
+  "history": [
+    {
+      "id": "hist_001",
+      "state": "resolved",
+      "issue_summary": "VPN client disconnects every 10-15 minutes when working from home on residential cable internet",
+      "user_role": "Software Engineer",
+      "user_location": "Remote (San Francisco)",
+      "diagnosis_path": [
+        "Confirmed VPN service status was operational (no global incident)",
+        "Asked about home network type — residential cable, ISP Comcast",
+        "Reviewed disconnect interval pattern (regular 10-15 min cadence indicates MTU rather than DHCP)",
+        "Tested by setting VPN client MTU to 1300"
+      ],
+      "root_cause": "MTU mismatch between VPN tunnel default (1500) and the user's residential ISP path which has effective MTU around 1400 due to PPPoE encapsulation overhead. Large packets get fragmented or dropped, causing the VPN to renegotiate and eventually time out.",
+      "resolution": "Set VPN client MTU to 1300 in advanced settings; restart VPN client. Disconnects stopped immediately and stayed stable across an 8-hour workday.",
+      "tags": [
+        "vpn",
+        "disconnect",
+        "remote",
+        "mtu",
+        "home_network",
+        "residential_isp"
+      ],
+      "resolved_at": "2026-04-22",
+      "time_to_resolution_minutes": 35,
+      "escalated": false
+    },
+    {
+      "id": "hist_002",
+      "state": "resolved",
+      "issue_summary": "Salesforce loading extremely slowly for the entire Chicago office team",
+      "user_role": "Sales Operations",
+      "user_location": "Chicago, IL",
+      "diagnosis_path": [
+        "Checked Salesforce trust.salesforce.com status page — degraded for Midwest region",
+        "Confirmed multiple users in the same office reporting identical symptoms",
+        "Identified upstream regional CDN issue (no internal action required)"
+      ],
+      "root_cause": "Regional Salesforce CDN node degradation in the Midwest. Affected all customers routed through the Chicago edge.",
+      "resolution": "Communicated known incident to affected users. Provided VPN East routing as a workaround for users with urgent client-facing work. Salesforce ops resolved within 4 hours.",
+      "tags": [
+        "salesforce",
+        "chicago",
+        "latency",
+        "saas_degradation",
+        "regional",
+        "known_incident"
+      ],
+      "resolved_at": "2026-03-14",
+      "time_to_resolution_minutes": 240,
+      "escalated": false
+    },
+    {
+      "id": "hist_003",
+      "state": "resolved",
+      "issue_summary": "Jenkins jobs timing out and Tableau reports stale starting the morning after a maintenance window",
+      "user_role": "Data Engineer",
+      "user_location": "New York, NY",
+      "diagnosis_path": [
+        "Confirmed maintenance window had occurred the prior evening",
+        "Checked Jenkins job logs — timeouts occurred specifically when fetching artifacts from internal Maven mirror",
+        "Cross-referenced change ticket — firewall allow-list had been tightened",
+        "Identified Jenkins agent egress IPs as missing from the new allow-list",
+        "Escalated to DevOps for firewall rule restoration"
+      ],
+      "root_cause": "Maintenance-window firewall rule change inadvertently removed Jenkins agent egress allowance to internal Maven and PyPI mirrors. Jobs hung on artifact fetch until socket timeout. Tableau staleness was a downstream effect of upstream pipeline failure.",
+      "resolution": "DevOps restored the firewall allow-list entry for Jenkins agent egress. Pipeline rerun completed successfully within 30 minutes. Tableau extracts refreshed within 2 hours of the fix.",
+      "tags": [
+        "jenkins",
+        "tableau",
+        "maintenance_window",
+        "firewall",
+        "data_pipeline",
+        "multi_system",
+        "post_change_incident"
+      ],
+      "resolved_at": "2026-02-09",
+      "time_to_resolution_minutes": 380,
+      "escalated": true,
+      "escalated_to": "DevOps / Data Platform"
+    },
+    {
+      "id": "hist_004",
+      "state": "resolved",
+      "issue_summary": "Forgot password to corporate SSO; user requested password reset",
+      "user_role": "Marketing Coordinator",
+      "user_location": "Austin, TX",
+      "diagnosis_path": [
+        "Verified user identity via security questions",
+        "Pointed user to sso.acme.com/reset"
+      ],
+      "root_cause": "Forgotten credential",
+      "resolution": "Self-service reset via sso.acme.com/reset succeeded.",
+      "tags": [
+        "password_reset",
+        "okta",
+        "self_service"
+      ],
+      "resolved_at": "2026-05-10",
+      "time_to_resolution_minutes": 8,
+      "escalated": false
+    },
+    {
+      "id": "hist_005",
+      "state": "resolved",
+      "issue_summary": "Account locked after multiple failed Okta login attempts",
+      "user_role": "Account Executive",
+      "user_location": "Chicago, IL",
+      "diagnosis_path": [
+        "Verified lockout via Okta admin console",
+        "Confirmed lockout reason was failed-attempt threshold, not credential-stuffing pattern"
+      ],
+      "root_cause": "User mistyped password 5 times; auto-locked by Okta lockout policy",
+      "resolution": "IAM verified identity and unlocked account. Recommended user enable browser password manager.",
+      "tags": [
+        "account_locked",
+        "okta",
+        "iam_escalation"
+      ],
+      "resolved_at": "2026-04-05",
+      "time_to_resolution_minutes": 22,
+      "escalated": true,
+      "escalated_to": "Identity Access Management"
+    },
+    {
+      "id": "hist_006",
+      "state": "resolved",
+      "issue_summary": "VPN connects but cannot reach internal Jira",
+      "user_role": "Software Engineer",
+      "user_location": "Remote (Seattle, WA)",
+      "diagnosis_path": [
+        "Confirmed VPN connected",
+        "Tested ping to internal Jira host — failed",
+        "Identified split-tunnel route missing for internal subnet"
+      ],
+      "root_cause": "Split-tunnel routing config did not include the new internal Jira subnet after a recent migration",
+      "resolution": "Pushed updated VPN client config with full internal subnet list; user reconnected and access restored.",
+      "tags": [
+        "vpn",
+        "split_tunnel",
+        "internal_routing"
+      ],
+      "resolved_at": "2026-03-28",
+      "time_to_resolution_minutes": 45,
+      "escalated": false
+    },
+    {
+      "id": "hist_007",
+      "state": "resolved",
+      "issue_summary": "Mobile MFA token not generating codes after phone replacement",
+      "user_role": "Finance Analyst",
+      "user_location": "New York, NY",
+      "diagnosis_path": [
+        "Confirmed user had replaced phone",
+        "Verified Okta MFA registration tied to old device"
+      ],
+      "root_cause": "MFA registered to retired device",
+      "resolution": "Escalated to IAM. After in-person identity verification, IAM reset MFA enrollment.",
+      "tags": [
+        "mfa",
+        "phone_replacement",
+        "iam_escalation"
+      ],
+      "resolved_at": "2026-04-30",
+      "time_to_resolution_minutes": 60,
+      "escalated": true,
+      "escalated_to": "Identity Access Management"
+    },
+    {
+      "id": "hist_008",
+      "state": "resolved",
+      "issue_summary": "Snowflake production read access requested for new data analyst",
+      "user_role": "Data Analyst",
+      "user_location": "San Francisco, CA",
+      "diagnosis_path": [
+        "Verified user is a member of Data Analytics team",
+        "Routed access request through standard governance flow"
+      ],
+      "root_cause": "New hire access provisioning",
+      "resolution": "Manager approved; data owner (Director of Data Platform) approved; access granted via standard Okta group membership.",
+      "tags": [
+        "snowflake",
+        "production_access",
+        "data_governance",
+        "manager_approval",
+        "data_owner_approval"
+      ],
+      "resolved_at": "2026-04-18",
+      "time_to_resolution_minutes": 1440,
+      "escalated": true,
+      "escalated_to": "Data Platform Team"
+    },
+    {
+      "id": "hist_009",
+      "state": "resolved",
+      "issue_summary": "Grafana read-only access requested for SRE team member",
+      "user_role": "Site Reliability Engineer",
+      "user_location": "Remote",
+      "diagnosis_path": [
+        "Verified team membership via HR system"
+      ],
+      "root_cause": "Access request",
+      "resolution": "User self-served via internal access portal; Okta group `grafana-readers` membership granted automatically after team-membership check passed.",
+      "tags": [
+        "grafana",
+        "readonly_access",
+        "self_service",
+        "okta_groups"
+      ],
+      "resolved_at": "2026-05-02",
+      "time_to_resolution_minutes": 5,
+      "escalated": false
+    },
+    {
+      "id": "hist_010",
+      "state": "resolved",
+      "issue_summary": "Slack search returning no results across all channels",
+      "user_role": "Customer Support Lead",
+      "user_location": "Atlanta, GA",
+      "diagnosis_path": [
+        "Checked Slack status page — global search index rebuild in progress",
+        "Confirmed via Slack admin"
+      ],
+      "root_cause": "Slack-side index rebuild after data-center migration",
+      "resolution": "Communicated to user; resolved by Slack within 6 hours.",
+      "tags": [
+        "slack",
+        "search",
+        "saas_degradation"
+      ],
+      "resolved_at": "2026-04-12",
+      "time_to_resolution_minutes": 360,
+      "escalated": false
+    },
+    {
+      "id": "hist_011",
+      "state": "resolved",
+      "issue_summary": "Zoom audio not working during meetings on macOS",
+      "user_role": "Sales Manager",
+      "user_location": "Chicago, IL",
+      "diagnosis_path": [
+        "Verified macOS microphone permissions for Zoom were revoked after OS update"
+      ],
+      "root_cause": "macOS Sequoia update reset Zoom microphone permission",
+      "resolution": "Re-enabled microphone permission in System Settings > Privacy & Security > Microphone.",
+      "tags": [
+        "zoom",
+        "macos",
+        "permissions",
+        "audio"
+      ],
+      "resolved_at": "2026-03-19",
+      "time_to_resolution_minutes": 12,
+      "escalated": false
+    },
+    {
+      "id": "hist_012",
+      "state": "resolved",
+      "issue_summary": "Outlook calendar not syncing with Google Workspace",
+      "user_role": "Executive Assistant",
+      "user_location": "New York, NY",
+      "diagnosis_path": [
+        "Confirmed Google Workspace was the source of truth",
+        "Outlook was using cached IMAP profile"
+      ],
+      "root_cause": "Outlook profile misconfiguration",
+      "resolution": "Removed Outlook account profile and re-added via Google Workspace OAuth.",
+      "tags": [
+        "calendar",
+        "outlook",
+        "google_workspace",
+        "sync"
+      ],
+      "resolved_at": "2026-04-26",
+      "time_to_resolution_minutes": 25,
+      "escalated": false
+    },
+    {
+      "id": "hist_013",
+      "state": "resolved",
+      "issue_summary": "Cannot install Adobe Creative Cloud — license unavailable",
+      "user_role": "Marketing Designer",
+      "user_location": "Austin, TX",
+      "diagnosis_path": [
+        "Confirmed Adobe license pool was exhausted"
+      ],
+      "root_cause": "License procurement delay",
+      "resolution": "Escalated to IT Procurement; new license provisioned next business day.",
+      "tags": [
+        "adobe",
+        "license",
+        "procurement"
+      ],
+      "resolved_at": "2026-03-31",
+      "time_to_resolution_minutes": 1500,
+      "escalated": true,
+      "escalated_to": "IT Procurement"
+    },
+    {
+      "id": "hist_014",
+      "state": "resolved",
+      "issue_summary": "MacBook Pro not charging — battery indicator shows fault",
+      "user_role": "Software Engineer",
+      "user_location": "San Francisco, CA",
+      "diagnosis_path": [
+        "Tried alternate USB-C cable and adapter — issue persisted",
+        "Apple diagnostics indicated battery service required"
+      ],
+      "root_cause": "Faulty battery (3-year-old laptop)",
+      "resolution": "IT Hardware replaced battery via Apple authorized service.",
+      "tags": [
+        "hardware",
+        "battery",
+        "macbook"
+      ],
+      "resolved_at": "2026-04-08",
+      "time_to_resolution_minutes": 2880,
+      "escalated": true,
+      "escalated_to": "IT Hardware"
+    },
+    {
+      "id": "hist_015",
+      "state": "resolved",
+      "issue_summary": "Office Wi-Fi extremely slow on certain floors",
+      "user_role": "Office Manager",
+      "user_location": "Chicago, IL",
+      "diagnosis_path": [
+        "Confirmed multiple users on the same floor reported issue",
+        "Network team identified rogue access point causing channel interference"
+      ],
+      "root_cause": "Unauthorized AP brought in by external vendor",
+      "resolution": "Removed rogue AP; Wi-Fi performance restored.",
+      "tags": [
+        "wifi",
+        "office",
+        "network",
+        "interference"
+      ],
+      "resolved_at": "2026-02-22",
+      "time_to_resolution_minutes": 180,
+      "escalated": true,
+      "escalated_to": "Network Engineering"
+    },
+    {
+      "id": "hist_016",
+      "state": "resolved",
+      "issue_summary": "Email not sending — stuck in outbox",
+      "user_role": "Account Executive",
+      "user_location": "Chicago, IL",
+      "diagnosis_path": [
+        "Verified attachment size — exceeded 25 MB Gmail limit"
+      ],
+      "root_cause": "Attachment over Gmail size limit",
+      "resolution": "Recommended Google Drive link sharing instead of attachment.",
+      "tags": [
+        "email",
+        "gmail",
+        "attachment_limit"
+      ],
+      "resolved_at": "2026-05-04",
+      "time_to_resolution_minutes": 6,
+      "escalated": false
+    },
+    {
+      "id": "hist_017",
+      "state": "user_abandoned",
+      "issue_summary": "Printer not appearing in print dialog after macOS update",
+      "user_role": "HR Business Partner",
+      "user_location": "Chicago, IL",
+      "diagnosis_path": [
+        "Confirmed printer driver may have been removed by macOS update",
+        "Sent user a follow-up asking to confirm whether reinstalling the HP driver resolved the issue",
+        "Sent second follow-up after 48 hours; no response",
+        "Auto-closed per 5-day inactivity policy"
+      ],
+      "root_cause": "Unconfirmed — user stopped responding before reproduction could be confirmed.",
+      "resolution": "No further response from user after two follow-up requests. Ticket auto-closed per 5-day inactivity SLA.",
+      "tags": [
+        "printer",
+        "macos",
+        "driver"
+      ],
+      "resolved_at": "2026-04-15",
+      "time_to_resolution_minutes": 7200,
+      "escalated": false
+    },
+    {
+      "id": "hist_018",
+      "state": "resolved",
+      "issue_summary": "GitHub access lost after team transfer",
+      "user_role": "Software Engineer",
+      "user_location": "Remote (Seattle, WA)",
+      "diagnosis_path": [
+        "Confirmed user was removed from old team's GitHub org membership",
+        "New team membership not yet provisioned"
+      ],
+      "root_cause": "Provisioning gap during team transfer",
+      "resolution": "New manager added user to current team's GitHub org.",
+      "tags": [
+        "github",
+        "access",
+        "provisioning"
+      ],
+      "resolved_at": "2026-03-09",
+      "time_to_resolution_minutes": 90,
+      "escalated": false
+    },
+    {
+      "id": "hist_019",
+      "state": "resolved",
+      "issue_summary": "BitLocker recovery key needed for Windows laptop",
+      "user_role": "Finance Analyst",
+      "user_location": "New York, NY",
+      "diagnosis_path": [
+        "Verified user identity",
+        "Retrieved key from corporate key escrow"
+      ],
+      "root_cause": "TPM reset triggered BitLocker recovery prompt",
+      "resolution": "Provided recovery key from escrow; instructed user on backup procedure.",
+      "tags": [
+        "bitlocker",
+        "windows",
+        "recovery_key"
+      ],
+      "resolved_at": "2026-04-02",
+      "time_to_resolution_minutes": 40,
+      "escalated": true,
+      "escalated_to": "IT Hardware"
+    },
+    {
+      "id": "hist_020",
+      "state": "resolved",
+      "issue_summary": "DNS resolution intermittently failing on corporate VPN",
+      "user_role": "Software Engineer",
+      "user_location": "Remote (San Francisco)",
+      "diagnosis_path": [
+        "Confirmed VPN service operational",
+        "Tested DNS resolution against internal resolvers — intermittent timeouts",
+        "Identified secondary DNS resolver was unreachable"
+      ],
+      "root_cause": "Failed secondary internal DNS resolver; VPN clients fell back inconsistently",
+      "resolution": "Network team brought secondary resolver back online; refreshed DNS clients.",
+      "tags": [
+        "vpn",
+        "dns",
+        "intermittent",
+        "internal_dns"
+      ],
+      "resolved_at": "2026-03-22",
+      "time_to_resolution_minutes": 95,
+      "escalated": true,
+      "escalated_to": "Network Engineering"
+    },
+    {
+      "id": "hist_021",
+      "state": "resolved",
+      "issue_summary": "Tableau dashboard shows blank charts after data source change",
+      "user_role": "Sales Operations Analyst",
+      "user_location": "Chicago, IL",
+      "diagnosis_path": [
+        "Verified data source had changed schema",
+        "Confirmed dashboard had not been republished"
+      ],
+      "root_cause": "Schema change broke dashboard query",
+      "resolution": "Dashboard owner republished with updated schema mapping.",
+      "tags": [
+        "tableau",
+        "dashboard",
+        "schema_change"
+      ],
+      "resolved_at": "2026-02-28",
+      "time_to_resolution_minutes": 120,
+      "escalated": false
+    },
+    {
+      "id": "hist_022",
+      "state": "could_not_reproduce",
+      "issue_summary": "Cannot connect to office Wi-Fi after laptop reimage",
+      "user_role": "Software Engineer",
+      "user_location": "San Francisco, CA",
+      "diagnosis_path": [
+        "Confirmed laptop was reimaged earlier the same day",
+        "Began drafting MDM 802.1X enrollment profile push",
+        "User reported back that Wi-Fi connected on its own after a few reboots before any agent action was taken",
+        "Closed as transient; no intervention applied"
+      ],
+      "root_cause": "Could not reproduce — most likely a transient 802.1X enrollment race that self-corrected on next reconnect.",
+      "resolution": "Issue self-resolved before troubleshooting began. Closed without intervention; instructed user to reopen if recurs.",
+      "tags": [
+        "wifi",
+        "802_1x",
+        "reimage",
+        "mdm"
+      ],
+      "resolved_at": "2026-04-29",
+      "time_to_resolution_minutes": 30,
+      "escalated": false
+    },
+    {
+      "id": "hist_023",
+      "state": "resolved",
+      "issue_summary": "Salesforce report scheduled email not sending",
+      "user_role": "Sales Operations",
+      "user_location": "Chicago, IL",
+      "diagnosis_path": [
+        "Confirmed user was not the report owner",
+        "Salesforce schedules require owner permissions"
+      ],
+      "root_cause": "Misunderstanding of Salesforce ownership model",
+      "resolution": "Transferred ownership to user; scheduled email began sending.",
+      "tags": [
+        "salesforce",
+        "scheduled_report",
+        "permissions"
+      ],
+      "resolved_at": "2026-03-04",
+      "time_to_resolution_minutes": 35,
+      "escalated": false
+    },
+    {
+      "id": "hist_024",
+      "state": "resolved",
+      "issue_summary": "Slack workspace invite not received",
+      "user_role": "New Hire",
+      "user_location": "Austin, TX",
+      "diagnosis_path": [
+        "Confirmed invite was sent to personal email pre-onboarding",
+        "Corporate email account not yet provisioned"
+      ],
+      "root_cause": "Onboarding ordering issue",
+      "resolution": "Resent Slack invite once corporate email provisioned.",
+      "tags": [
+        "slack",
+        "onboarding",
+        "provisioning"
+      ],
+      "resolved_at": "2026-05-13",
+      "time_to_resolution_minutes": 240,
+      "escalated": false
+    },
+    {
+      "id": "hist_025",
+      "state": "resolved",
+      "issue_summary": "External monitor not detected on USB-C dock",
+      "user_role": "Software Engineer",
+      "user_location": "San Francisco, CA",
+      "diagnosis_path": [
+        "Tested with another monitor — same dock port worked",
+        "Concluded original monitor cable was faulty"
+      ],
+      "root_cause": "Faulty DisplayPort cable",
+      "resolution": "Replaced cable from IT supply.",
+      "tags": [
+        "monitor",
+        "displayport",
+        "hardware"
+      ],
+      "resolved_at": "2026-04-20",
+      "time_to_resolution_minutes": 20,
+      "escalated": false
+    }
+  ]
+}
