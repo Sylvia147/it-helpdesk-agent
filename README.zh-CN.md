@@ -380,7 +380,7 @@ Agent 自带一套 deterministic 评测套件，**14 个 case 分 4 类**：
 
 **故意做的：**
 
-- **CLI 而不是 Web UI**。这个项目核心要展示的是 agent 循环和工具推理，不是聊天 UI 控件。CLI + rich 渲染的内联 trace 已经够评估 agent 行为。Web UI 是 [PLAN.md](PLAN.md) 的 Stage 3 任务。
+- **CLI 而不是 Web UI**。这个项目核心要展示的是 agent 循环和工具推理，不是聊天 UI 控件。CLI + rich 渲染的内联 trace 已经够评估 agent 行为，也能降低评审本地跑起来的摩擦。Web 或 Slack/Teams 入口本质上只是包一层同一个 `run_turn(state, message)` 接口，不会改变核心设计。
 - **单 agent loop + native tool use**，不是多 prompt pipeline（intent → plan → diagnose → escalate）。Claude 4.6 的 native tool use 已经很成熟；pipeline 化会让延迟 4 倍、失败面 4 倍、成本 4 倍，但在 5 demo 这个规模上不会改善行为。
 - **BM25 而不是向量嵌入**。8 篇 KB 上向量是过度工程，引用会变模糊（没有精确 keyword 保证），还多一个运行时依赖。语料破 1000 条再换。
 - **Mock 数据而不是真实集成**。Take-home 必须让评审 5 分钟跑起来，他没我们的基础设施。工具接口设计成"换 mock 为真实适配器（Okta API / ServiceNow API）是改配置，不是重设计"。

@@ -382,7 +382,7 @@ What I deliberately chose, and what I deliberately didn't.
 
 **Chosen:**
 
-- **CLI over web UI.** The interesting work is the agent loop and tool reasoning, not a chat widget. CLI with rich-rendered inline traces is enough to evaluate the agent's behavior. A web UI is a Stage-3 task in [PLAN.md](PLAN.md).
+- **CLI over web UI.** The interesting work is the agent loop and tool reasoning, not a chat widget. CLI with rich-rendered inline traces is enough to evaluate the agent's behavior while keeping setup and review friction low. A web or Slack/Teams surface would wrap the same `run_turn(state, message)` interface rather than change the core design.
 - **Single agent loop with native tool use** rather than a multi-prompt pipeline (intent → plan → diagnose → escalate). Native tool use on Claude 4.6 is mature; pipelining would 4× the latency, 4× the failure modes, and 4× the cost without improving behavior on a five-demo scope.
 - **BM25 over vector embeddings.** The KB has 8 articles. Vectors would make citations less precise (no exact-keyword guarantee) and add a runtime dependency. If the corpus grew past ~1k entries we'd switch.
 - **Mock data over real integrations.** The take-home must run in five minutes for a reviewer with no access to our infrastructure. Tool interfaces are designed so swapping a mock for a real adapter (Okta API, ServiceNow API) is a configuration change.
