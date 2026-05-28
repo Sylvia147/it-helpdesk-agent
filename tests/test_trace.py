@@ -72,9 +72,38 @@ def test_summarize_no_hits():
 # --- JSONL persistence -----------------------------------------------------
 
 
-def test_tool_call_event_persisted(tmp_path):
+def test_user_message_event_persisted(tmp_path):
     log = tmp_path / "traces.jsonl"
     t = Tracer("conv_test", console=_silent_console(), log_path=log, render=False)
+    t.user_message("Salesforce is slow")
+
+    rows = _read_jsonl(log)
+    assert len(rows) == 1
+    assert rows[0]["event_type"] == "user_message"
+    assert rows[0]["payload"]["text"] == "Salesforce is slow"
+
+
+def test_assistant_message_event_persisted(tmp_path):
+    log = tmp_path / "traces.jsonl"
+    t = Tracer("conv_test", console=_silent_console(), log_path=log, render=False)
+    t.assistant_message("This is a known incident.")
+
+    rows = _read_jsonl(log)
+    assert len(rows) == 1
+    assert rows[0]["event_type"] == "assistant_message"
+    assert rows[0]["payload"]["text"] == "This is a known incident."
+
+
+def test_tool_call_event_persisted(tmp_path):
+    log = tmp_path / "traces.jsonl"
+    conv_dir = tmp_path / "conversations"
+    t = Tracer(
+        "conv_test",
+        console=_silent_console(),
+        log_path=log,
+        conversation_log_dir=conv_dir,
+        render=False,
+    )
     t.tool_call("lookup_user", {"user_id": "u_001"})
 
     rows = _read_jsonl(log)
@@ -83,6 +112,9 @@ def test_tool_call_event_persisted(tmp_path):
     assert rows[0]["conversation_id"] == "conv_test"
     assert rows[0]["payload"]["name"] == "lookup_user"
     assert rows[0]["payload"]["input"] == {"user_id": "u_001"}
+
+    conv_rows = _read_jsonl(conv_dir / "conv_test.jsonl")
+    assert conv_rows == rows
 
 
 def test_tool_result_event_records_success(tmp_path):
@@ -101,6 +133,11 @@ def test_tool_result_event_records_success(tmp_path):
     assert rows[0]["event_type"] == "tool_result"
     assert rows[0]["payload"]["success"] is True
     assert rows[0]["payload"]["latency_ms"] == 2.5
+    assert rows[0]["payload"]["data"] == {
+        "service": "Okta",
+        "status": "operational",
+        "incidents": [],
+    }
     assert rows[0]["payload"]["data_summary"] is not None
 
 

@@ -4,7 +4,7 @@ Coverage targets:
 - Each tool input schema constructs with valid args and rejects invalid ones.
 - All Literal-typed fields (urgency, risk_level, history state, event type) reject
   unknown values.
-- Numeric bounds (top_k, confidence, latency_ms) are enforced.
+- Numeric bounds (top_k, latency_ms) are enforced.
 - All schemas forbid extra fields.
 - JSON serialization round-trips lossless on EscalationSummary and TraceEvent.
 - Each tool input schema produces a JSON Schema consumable by Anthropic's tool use API.
@@ -22,7 +22,6 @@ from agent.schemas import (
     CheckSystemStatusInput,
     EscalateInput,
     EscalationSummary,
-    Hypothesis,
     LookupUserInput,
     PolicyDecision,
     SearchHistoryInput,
@@ -120,24 +119,6 @@ def test_tool_result_error_payload():
 def test_tool_result_negative_latency_rejected():
     with pytest.raises(ValidationError):
         ToolResult(name="x", success=True, latency_ms=-1.0)
-
-
-# --- Hypothesis ------------------------------------------------------------
-
-
-def test_hypothesis_confidence_in_range():
-    h = Hypothesis(statement="MTU mismatch", confidence=0.72)
-    assert h.confidence == 0.72
-
-
-def test_hypothesis_confidence_above_one_rejected():
-    with pytest.raises(ValidationError):
-        Hypothesis(statement="x", confidence=1.5)
-
-
-def test_hypothesis_confidence_negative_rejected():
-    with pytest.raises(ValidationError):
-        Hypothesis(statement="x", confidence=-0.1)
 
 
 # --- Policy decision -------------------------------------------------------

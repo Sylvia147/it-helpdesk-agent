@@ -450,7 +450,7 @@ Roughly ordered by ROI for the production case:
 3. **Broader fault injection** beyond one-tool simulated errors: timeouts, malformed payloads, stale status data, and retry budgets.
 4. **Multi-turn skill** — the agent guiding a user through a procedure step-by-step (e.g., walking them through MTU adjustment), confirming each step, branching on responses.
 5. **Vector retrieval** when the KB exceeds ~1000 articles. Embeddings would be a hybrid layer on top of BM25, not a replacement.
-6. **Confidence calibration** — the system prompt asks the agent to express uncertainty (`confidence` in `Hypothesis`), but currently the eval doesn't grade calibration. With more cases and ground-truth root causes, we could measure whether the agent's stated confidence correlates with whether it was right.
+6. **Confidence calibration** — the system prompt asks the agent to express uncertainty, but currently the eval doesn't grade calibration. With more cases and ground-truth root causes, we could measure whether the agent's stated confidence correlates with whether it was right.
 7. **Streamlit / web UI** for conversational use without a terminal.
 8. **Multi-language support** — non-English mock data and prompts would test whether the agent's reasoning still holds.
 

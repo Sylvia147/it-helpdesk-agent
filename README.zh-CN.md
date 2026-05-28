@@ -448,7 +448,7 @@ Agent 自带一套 deterministic 评测套件，**14 个 case 分 4 类**：
 3. **更完整的故障注入**，不只测单工具错误，也测超时、异常 payload、陈旧状态数据和 retry budget。
 4. **多轮 skill** —— agent 一步一步带用户走某个流程（比如带他改 MTU），每步确认，根据回应分支。
 5. **向量检索**，在 KB 超过 1000 条时上。会和 BM25 做 hybrid，不是替换。
-6. **置信度校准** —— System prompt 让 agent 表达不确定性（`Hypothesis` 里的 `confidence`），但当前 eval 不评校准度。如果有更多 case + ground truth 根因，可以测 agent 自报 confidence 跟实际正确性的相关度。
+6. **置信度校准** —— System prompt 让 agent 表达不确定性，但当前 eval 不评校准度。如果有更多 case + ground truth 根因，可以测 agent 自报 confidence 跟实际正确性的相关度。
 7. **Streamlit / Web UI** —— 不用终端的会话方式。
 8. **多语言** —— 非英文 mock 数据 + prompt 测 agent 推理在跨语言下还成不成立。
 

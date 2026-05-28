@@ -27,18 +27,28 @@ KB_DIR = DATA_DIR / "kb"
 
 
 # --- JSON loaders ---------------------------------------------------------
+# These loaders are cached because the mock data files are static during a run.
+# 这些 loader 都做缓存，因为 demo 数据在一次运行中不会变；第一次读文件后，
+#     后续工具调用直接走内存。
 
 
 @lru_cache(maxsize=1)
 def load_users() -> dict:
-    """Returns {user_id: record} with `_meta` stripped at the top level."""
+    """Returns {user_id: record} with `_meta` stripped at the top level.
+
+    读取员工目录。顶层 `_meta` 是数据说明，不是用户记录，所以过滤掉。
+    """
     raw = json.loads((DATA_DIR / "users.json").read_text())
     return {k: v for k, v in raw.items() if not k.startswith("_")}
 
 
 @lru_cache(maxsize=1)
 def load_status() -> tuple[dict, dict]:
-    """Returns (services, dependency_graph). Both have `_*` keys stripped."""
+    """Returns (services, dependency_graph). Both have `_*` keys stripped.
+
+    返回两个结构：服务状态表和依赖图。依赖图用于“Tableau 受 Jenkins
+    上游影响”这类多系统场景。
+    """
     raw = json.loads((DATA_DIR / "system_status.json").read_text())
     deps_raw = raw.get("_dependencies", {})
     deps = {k: v for k, v in deps_raw.items() if not k.startswith("_")}
@@ -48,14 +58,20 @@ def load_status() -> tuple[dict, dict]:
 
 @lru_cache(maxsize=1)
 def load_history() -> list[dict]:
-    """Returns the list of historical case records."""
+    """Returns the list of historical case records.
+
+    历史工单用于 search_history，让 agent 能参考过去类似案例。
+    """
     raw = json.loads((DATA_DIR / "resolution_history.json").read_text())
     return raw["history"]
 
 
 @lru_cache(maxsize=1)
 def load_policies() -> dict:
-    """Returns {action: policy_record}."""
+    """Returns {action: policy_record}.
+
+    策略表用于判断 agent 是否有权限处理某类动作，或必须升级人工。
+    """
     raw = json.loads((DATA_DIR / "policies.json").read_text())
     return {k: v for k, v in raw.items() if not k.startswith("_")}
 
@@ -69,12 +85,17 @@ _TITLE_RE = re.compile(r"^#\s+(.+)$", re.MULTILINE)
 
 @lru_cache(maxsize=1)
 def load_kb() -> list[dict]:
-    """Load every kb/*.md article. Each entry has article_id, title, path, content."""
+    """Load every kb/*.md article. Each entry has article_id, title, path, content.
+
+    把 markdown KB 文章读成结构化记录，方便 BM25 建索引。
+    """
     articles = []
     for path in sorted(KB_DIR.glob("*.md")):
         content = path.read_text()
         article_id_match = _ARTICLE_ID_RE.search(content)
         title_match = _TITLE_RE.search(content)
+        # Article IDs/titles are parsed from markdown, with filename fallback.
+        # 优先从 markdown 正文里解析 Article ID 和标题；解析不到就用文件名兜底。
         articles.append(
             {
                 "article_id": article_id_match.group(1) if article_id_match else path.stem,
@@ -93,7 +114,10 @@ _TOKEN_RE = re.compile(r"[a-z0-9]+")
 
 
 def tokenize(text: str) -> list[str]:
-    """Lowercase word tokens. Drops markdown punctuation, suitable for BM25."""
+    """Lowercase word tokens. Drops markdown punctuation, suitable for BM25.
+
+    简单分词器：转小写，只保留字母数字 token。小语料下 BM25 足够好用。
+    """
     return _TOKEN_RE.findall(text.lower())
 
 
@@ -105,6 +129,9 @@ def simulated_failure(tool_name: str) -> str | None:
 
     The env var is read fresh each call (no caching) so eval cases can flip the
     flag between runs in the same process.
+
+    故障注入用于测试可靠性。比如 SIMULATE_FAILURE=search_kb 时，
+    search_kb 会返回 success=False，验证 agent 不会引用不存在的 KB 内容。
     """
     target = os.environ.get("SIMULATE_FAILURE", "").strip()
     if target and target == tool_name:

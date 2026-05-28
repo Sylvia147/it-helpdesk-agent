@@ -1,4 +1,4 @@
-"""Pydantic schemas for tool I/O, agent reasoning state, policy decisions, and trace events.
+"""Pydantic schemas for tool I/O, policy decisions, handoffs, and trace events.
 
 Conventions:
 - Tool input schemas (*Input) are converted to JSON Schema for Anthropic's tool use API
@@ -20,11 +20,15 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------
 # Tool input schemas — converted to JSON Schema for Anthropic's tool use API
+# 工具输入模型：会被转换成 Anthropic tool schema，模型会看到这些字段说明。
 # ---------------------------------------------------------------------------
 
 
 class LookupUserInput(BaseModel):
-    """Look up an employee by their user_id."""
+    """Look up an employee by their user_id.
+
+    lookup_user 的入参，只允许 user_id 这一个字段。
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -32,7 +36,10 @@ class LookupUserInput(BaseModel):
 
 
 class SearchKBInput(BaseModel):
-    """Full-text search across the IT knowledge base markdown articles."""
+    """Full-text search across the IT knowledge base markdown articles.
+
+    search_kb 的入参。top_k 有上下限，避免模型一次请求过多结果。
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -45,7 +52,10 @@ class SearchKBInput(BaseModel):
 
 
 class CheckSystemStatusInput(BaseModel):
-    """Get current status, active incidents, and recent changes for one service."""
+    """Get current status, active incidents, and recent changes for one service.
+
+    check_system_status 的入参；service 是数据文件里的服务 key。
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -58,7 +68,10 @@ HistoryState = Literal["resolved", "user_abandoned", "could_not_reproduce", "dup
 
 
 class SearchHistoryInput(BaseModel):
-    """Search past IT support tickets for similar issue patterns."""
+    """Search past IT support tickets for similar issue patterns.
+
+    search_history 的入参。默认只搜 resolved 历史案例，减少噪音。
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -93,7 +106,11 @@ PolicyAction = Literal[
 
 
 class EscalateInput(BaseModel):
-    """Escalate the conversation to a human team with a structured handoff package."""
+    """Escalate the conversation to a human team with a structured handoff package.
+
+    escalate 的模型侧入参。注意 user_id、user_name、services_involved、
+    tools_consulted 不在这里，因为这些事实字段由 orchestrator 从 state 注入。
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -125,11 +142,16 @@ class EscalateInput(BaseModel):
 
 # ---------------------------------------------------------------------------
 # Tool execution result — uniform shape every tool returns
+# 工具执行结果：所有工具统一返回这个结构，方便 orchestrator/trace 统一处理。
 # ---------------------------------------------------------------------------
 
 
 class ToolResult(BaseModel):
-    """Uniform return shape for every tool. Consumed by both the agent loop and trace."""
+    """Uniform return shape for every tool. Consumed by both the agent loop and trace.
+
+    success=True 时看 data；success=False 时看 error。即使工具失败，
+    也用同一个结构返回给 LLM，让模型能承认失败而不是编造结果。
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -145,32 +167,9 @@ class ToolResult(BaseModel):
         default=None, ge=0, description="Wall-clock time spent inside the tool."
     )
 
-
-# ---------------------------------------------------------------------------
-# Agent reasoning state
-# ---------------------------------------------------------------------------
-
-
-class Hypothesis(BaseModel):
-    """A working hypothesis the agent has formed during diagnosis."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    statement: str = Field(description="Plain-English description of the suspected cause.")
-    confidence: float = Field(
-        ge=0.0, le=1.0, description="Agent's confidence in this hypothesis, 0 to 1."
-    )
-    evidence: list[str] = Field(
-        default_factory=list, description="Supporting evidence lines."
-    )
-    sources_used: list[str] = Field(
-        default_factory=list,
-        description="Tool names whose results contributed to this hypothesis.",
-    )
-
-
 # ---------------------------------------------------------------------------
 # Policy engine decision — mirrors data/policies.json field naming
+# 策略判断结果：字段名刻意贴近 policies.json，让 policy.py 只做薄封装。
 # ---------------------------------------------------------------------------
 
 
@@ -182,6 +181,8 @@ class PolicyDecision(BaseModel):
 
     Field names deliberately mirror data/policies.json so the policy engine is a thin
     filter rather than a translation layer.
+
+    agent_allowed=False 表示 agent 不能直接执行，需要升级或给人工处理。
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -196,11 +197,16 @@ class PolicyDecision(BaseModel):
 
 # ---------------------------------------------------------------------------
 # Escalation handoff package — written to logs/escalations/ on escalate
+# 升级交接包：escalate 工具成功时写入 logs/escalations/*.json。
 # ---------------------------------------------------------------------------
 
 
 class EscalationSummary(BaseModel):
-    """Complete handoff record produced when the agent escalates."""
+    """Complete handoff record produced when the agent escalates.
+
+    这是给人工团队看的结构化摘要，包含用户、问题、紧急程度、已查工具、
+    涉及服务、疑似原因、推荐团队和 policy 判断。
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -221,6 +227,7 @@ class EscalationSummary(BaseModel):
 
 # ---------------------------------------------------------------------------
 # Trace event — appended to logs/traces.jsonl, one row per event
+# Trace 事件：每个工具调用/结果/升级都会写一行 JSONL，方便回放和排查。
 # ---------------------------------------------------------------------------
 
 
@@ -229,14 +236,17 @@ TraceEventType = Literal[
     "assistant_message",
     "tool_call",
     "tool_result",
-    "hypothesis",
     "policy_check",
     "escalation",
 ]
 
 
 class TraceEvent(BaseModel):
-    """One row in logs/traces.jsonl. Payload shape varies by event_type."""
+    """One row in logs/traces.jsonl. Payload shape varies by event_type.
+
+    payload 的具体字段取决于 event_type，例如 tool_call 会放 name/input，
+    tool_result 会放 success/error/latency 等。
+    """
 
     model_config = ConfigDict(extra="forbid")
 

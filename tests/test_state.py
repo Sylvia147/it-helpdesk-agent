@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from agent.schemas import EscalationSummary, Hypothesis, PolicyDecision, ToolResult
+from agent.schemas import EscalationSummary, PolicyDecision, ToolResult
 from agent.state import ConversationState
 
 
@@ -20,7 +20,6 @@ def test_minimal_construction_only_requires_user_id():
     assert s.user_id == "u_001"
     assert s.messages == []
     assert s.investigation == []
-    assert s.hypotheses == []
     assert s.escalated is False
     assert s.finished is False
 
@@ -121,15 +120,6 @@ def test_services_touched_skips_failed_calls():
     assert s.services_touched() == []
 
 
-# --- Hypotheses ----------------------------------------------------------
-
-
-def test_add_hypothesis_appends():
-    s = ConversationState(user_id="u_001")
-    s.add_hypothesis(Hypothesis(statement="MTU mismatch", confidence=0.7))
-    assert len(s.hypotheses) == 1
-
-
 # --- Escalation ----------------------------------------------------------
 
 
@@ -216,7 +206,6 @@ def test_full_round_trip_through_json():
     s = ConversationState(user_id="u_001", user_record={"name": "Alice", "department": "Sales"})
     s.add_user_message("VPN broken")
     s.record_tool_result(ToolResult(name="lookup_user", success=True, data={"user_id": "u_001"}))
-    s.add_hypothesis(Hypothesis(statement="MTU mismatch", confidence=0.72, evidence=["..."]))
     s.mark_escalated(_sample_escalation())
 
     raw = s.model_dump_json()

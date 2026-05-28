@@ -49,3 +49,22 @@ def test_execute_tool_injects_context_and_enforces_policy_route(tmp_path, monkey
     assert result.data["user_name"] == "David Kim"
     assert result.data["recommended_team"] == "Data Platform Team"
     assert result.data["policy_decision"]["agent_allowed"] is False
+
+
+def test_execute_tool_refuses_escalation_without_user_profile():
+    state = ConversationState(user_id="u_999")
+
+    result = _execute_tool(
+        "escalate",
+        {
+            "policy_action": "account_unlock",
+            "issue_summary": "Unknown user cannot log into Okta",
+            "urgency": "high",
+            "suspected_cause": "unknown",
+            "recommended_team": "Identity Access Management",
+        },
+        state,
+    )
+
+    assert result.success is False
+    assert "recognized employee profile" in (result.error or "")
